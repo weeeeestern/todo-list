@@ -15,13 +15,13 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - ./mysql/initdb.d:/docker-entrypoint-initdb.d
 
-  # app:
-  #   build: .
-  #   container_name: todo-app
-  #   ports:
-  #     - "8080:8080"
-  #   depends_on:
-  #     - db
+   app:
+     build: .
+     container_name: todo-app
+     ports:
+       - "8080:8080"
+     depends_on:
+       - db
 
 volumes:
   db-data:

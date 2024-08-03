@@ -21,7 +21,7 @@ services:
     image: carrotseo/go-todo
     container_name: todo-app
     environment:
-    - DB_HOST=todo-db
+    - DB_HOST=db
     - DB_PORT=3306
     - DB_USER=user
     - DB_PASSWORD=password

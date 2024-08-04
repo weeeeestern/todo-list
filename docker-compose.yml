@@ -11,7 +11,7 @@ services:
       MYSQL_PASSWORD: password
       TZ: Asia/Seoul
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - db-data:/var/lib/mysql
       - /etc/timezone:/etc/timezone:ro

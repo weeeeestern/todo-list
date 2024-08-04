@@ -33,6 +33,7 @@ func init() {
 	if err != nil {
 		panic("failed to connect database")
 	}
+	db.AutoMigrate(&Todo{})
 }
 
 func main() {

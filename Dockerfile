@@ -1,6 +1,4 @@
-FROM golang:1.22.5-alpine
-
-RUN apk add --no-cache git
+FROM golang:1.22.5
 
 WORKDIR /app
 
@@ -16,5 +14,7 @@ RUN go get -u gorm.io/driver/mysql
 COPY . .
 
 RUN go build -o /go-todo
+
+EXPOSE 8080
 
 CMD ["/go-todo"]

@@ -5,13 +5,14 @@ import (
 	"os"
 	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
 type Todo struct {
-	ID          uint      `gorm:"primaryKey"`
+	ID          uint      `gorm:"primaryKey" json:"id"`
 	Title       string    `json:"title"`
 	IsCompleted bool      `json:"is_completed"`
 	CreatedAt   time.Time `json:"created_at"`
@@ -38,6 +39,9 @@ func init() {
 
 func main() {
 	r := gin.Default()
+
+	// CORS 설정 추가
+	r.Use(cors.Default())
 
 	r.GET("/todo", GetTodos)
 	r.GET("/todo/:id", GetTodo)

@@ -1,3 +1,4 @@
+
 services:
   db:
     image: mysql:latest
@@ -14,11 +15,11 @@ services:
       - db-data:/var/lib/mysql
       - /etc/timezone:/etc/timezone:ro
 
-  app:
+  backend:
     build:
-      context: .
+      context: ./todo-backend
       dockerfile: Dockerfile
-    container_name: todo-app
+    container_name: todo-backend
     environment:
       - DB_HOST=db
       - DB_PORT=3306
@@ -29,6 +30,18 @@ services:
       - "8080:8080"
     depends_on:
       - db
+
+  frontend:
+    build:
+      context: ./todo-frontend
+      dockerfile: Dockerfile
+    container_name: todo-frontend
+    environment:
+      - REACT_APP_API_URL=http://backend:8080
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
 
 volumes:
   db-data:

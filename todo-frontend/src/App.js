@@ -2,94 +2,112 @@ import React, { Component } from 'react';
 import TodoListTemplate from './components/TodoListTemplate';
 import Form from './components/Form';
 import TodoItemList from './components/TodoItemList';
-
+import api from './api';
 
 class App extends Component {
-
-  id = 3 // 이미 0,1,2 가 존재하므로 3으로 설정
-
   state = {
     input: '',
-    todos: [
-      { id: 0, text: ' 리액트 소개', checked: false },
-      { id: 1, text: ' 리액트 소개', checked: true },
-      { id: 2, text: ' 리액트 소개', checked: false }
-    ]
+    todos: []
+  };
+
+  componentDidMount() {
+    this.loadTodos();
   }
+
+  loadTodos = async () => {
+    try {
+      const response = await api.get('/todo');
+      console.log('Loaded Todos:', response.data); // 디버깅용
+      this.setState({ todos: response.data });
+    } catch (error) {
+      console.error('Error loading todos:', error);
+    }
+  };
 
   handleChange = (e) => {
-    this.setState({
-      input: e.target.value // input 의 다음 바뀔 값
-    });
-  }
+    this.setState({ input: e.target.value });
+  };
 
-  handleCreate = () => {
+  handleCreate = async () => {
     const { input, todos } = this.state;
-    this.setState({
-      input: '', // 인풋 비우고
-      // concat 을 사용하여 배열에 추가
-      todos: todos.concat({
-        id: this.id++,
-        text: input,
-        checked: false
-      })
-    });
-  }
+    const newTodo = {
+      title: input,
+      is_completed: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    try {
+      const response = await api.post('/todo', newTodo);
+      console.log('Created Todo:', response.data); // 디버깅용
+      this.setState({
+        input: '',
+        todos: todos.concat(response.data)
+      });
+    } catch (error) {
+      console.error('Error creating todo:', error);
+    }
+  };
 
   handleKeyPress = (e) => {
-    // 눌려진 키가 Enter 면 handleCreate 호출
-    if(e.key === 'Enter') {
+    if (e.key === 'Enter') {
       this.handleCreate();
     }
-  }
+  };
 
-  handleToggle = (id) => {
+  handleToggle = async (id) => {
+    console.log('handleToggle id:', id); // 디버깅용
     const { todos } = this.state;
-
-    // 파라미터로 받은 id 를 가지고 몇번째 아이템인지 찾습니다.
     const index = todos.findIndex(todo => todo.id === id);
-    const selected = todos[index]; // 선택한 객체
-
-    const nextTodos = [...todos]; // 배열을 복사
-
-    // 기존의 값들을 복사하고, checked 값을 덮어쓰기
-    nextTodos[index] = { 
-      ...selected, 
-      checked: !selected.checked
+    const selected = todos[index];
+    const updatedTodo = {
+      ...selected,
+      is_completed: !selected.is_completed,
+      updated_at: new Date().toISOString()
     };
 
-    this.setState({
-      todos: nextTodos
-    });
-  }
+    try {
+      const response = await api.put(`/todo/${id}`, updatedTodo);
+      const nextTodos = [...todos];
+      nextTodos[index] = response.data;
+      this.setState({ todos: nextTodos });
+    } catch (error) {
+      console.error('Error updating todo:', error);
+    }
+  };
 
-  handleRemove = (id) => {
+  handleRemove = async (id) => {
+    console.log('handleRemove id:', id); // 디버깅용
+    try {
+      await api.delete(`/todo/${id}`);
+      this.setState({
+        todos: this.state.todos.filter(todo => todo.id !== id)
+      });
+    } catch (error) {
+      console.error('Error deleting todo:', error);
+    }
+  };
+
+  handleUpdate = async (id, newText) => {
+    console.log('handleUpdate id:', id); // 디버깅용
     const { todos } = this.state;
-    this.setState({
-      todos: todos.filter(todo => todo.id !== id)
-    });
-  }
-
-  handleUpdate = (id, newText) => {
-    const { todos } = this.state;
-
-    // 파라미터로 받은 id 를 가지고 몇번째 아이템인지 찾습니다.
     const index = todos.findIndex(todo => todo.id === id);
-    const selected = todos[index]; // 선택한 객체
-
-    const nextTodos = [...todos]; // 배열을 복사
-
-    // 기존의 값들을 복사하고, text 값을 덮어쓰기
-    nextTodos[index] = { 
-      ...selected, 
-      text: newText
+    const selected = todos[index];
+    const updatedTodo = {
+      ...selected,
+      title: newText,
+      updated_at: new Date().toISOString()
     };
 
-    this.setState({
-      todos: nextTodos
-    });
-  }
-
+    try {
+      const response = await api.put(`/todo/${id}`, updatedTodo);
+      const nextTodos = [...todos];
+      nextTodos[index] = response.data;
+      this.setState({ todos: nextTodos });
+    } catch (error) {
+      console.error('Error updating todo:', error);
+    }
+  };
 
   render() {
     const { input, todos } = this.state;
@@ -104,14 +122,19 @@ class App extends Component {
 
     return (
       <TodoListTemplate form={(
-        <Form 
+        <Form
           value={input}
           onKeyPress={handleKeyPress}
           onChange={handleChange}
           onCreate={handleCreate}
         />
       )}>
-         <TodoItemList todos={todos} onToggle={handleToggle} onRemove={handleRemove} onUpdate={handleUpdate}/>
+        <TodoItemList
+          todos={todos}
+          onToggle={handleToggle}
+          onRemove={handleRemove}
+          onUpdate={handleUpdate}
+        />
       </TodoListTemplate>
     );
   }

@@ -30,11 +30,24 @@ func init() {
 		os.Getenv("DB_PORT"),
 		os.Getenv("DB_NAME"))
 
-	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	if err != nil {
-		panic("failed to connect database")
+	maxRetries := 10
+	for i := 1; i <= maxRetries; i++ {
+		db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+		if err == nil {
+			break
+		}
+		fmt.Printf("[%d/%d] Failed to connect to DB: %v\n", i, maxRetries, err)
+		time.Sleep(3 * time.Second)
 	}
-	db.AutoMigrate(&Todo{})
+	if err != nil {
+		panic(fmt.Sprintf("Could not connect to DB after %d attempts: %v", maxRetries, err))
+	}
+
+	err = db.AutoMigrate(&Todo{})
+	if err != nil {
+		panic("AutoMigrate failed: " + err.Error())
+	}
+
 }
 
 func main() {

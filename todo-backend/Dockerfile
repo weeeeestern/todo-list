@@ -5,10 +5,9 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 
-RUN go get -u github.com/gin-gonic/gin
-RUN go get -u gorm.io/gorm
-RUN go get -u gorm.io/driver/mysql
-RUN go get -u github.com/gin-contrib/cors
+RUN apt-get update && apt-get install -y netcat-openbsd
+COPY wait-for.sh /wait-for.sh
+RUN chmod +x /wait-for.sh
 
 COPY . .
 

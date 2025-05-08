@@ -15,7 +15,7 @@ services:
       - db-data:/var/lib/mysql
       - /etc/timezone:/etc/timezone:ro
 
-  backend:
+  backend-blue:
     build:
       context: ./todo-backend
       dockerfile: Dockerfile
@@ -27,7 +27,23 @@ services:
       - DB_PASSWORD=password
       - DB_NAME=todoapp
     ports:
-      - "8080:8080"
+      - "5001:8080"
+    depends_on:
+      - db
+
+  backend-green:
+    build:
+      context: ./todo-backend
+      dockerfile: Dockerfile
+    container_name: todo-backend
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=user
+      - DB_PASSWORD=password
+      - DB_NAME=todoapp
+    ports:
+      - "5002:8080"
     depends_on:
       - db
 
@@ -41,7 +57,7 @@ services:
     ports:
       - "3000:80"
     depends_on:
-      - backend
+      - backend-blue
 
 volumes:
   db-data:
